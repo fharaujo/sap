@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- README atualizado para refletir a arquitetura atual (`src/infrastructure/integration/sap/`), scripts do `package.json`, variáveis de ambiente e instruções de Docker.
+- Correção/clarificação de portas e prefixos padrão (`PORT`, `API_PREFIX`) conforme `src/main.ts` e `docker-compose.yml`.
+- Seções traduzidas e padronizadas (pt-BR) sem alterar exemplos de uso.
+
+### Added
+- Seção de Integração SAP no README com exemplo de uso do `SapService` e `SapCreateUserDto`.
+
 ## [1.0.0] - 2024-01-XX
 
 ### Added

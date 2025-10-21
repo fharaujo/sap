@@ -1,23 +1,24 @@
 # NestJS Boilerplate
 
-Modern, production-ready NestJS boilerplate with clean architecture, TypeScript, and best practices for building scalable REST APIs.
+Boilerplate NestJS moderno, pronto para produção, com arquitetura limpa, TypeScript, integrações comuns (Prisma, Redis, RabbitMQ) e exemplos de autenticação e integração SAP.
 
 ## 🚀 Features
 
 - **Modern Stack**: Node.js 20+, TypeScript, NestJS
-- **Clean Architecture**: Modular structure with separation of concerns
-- **Authentication**: JWT with refresh tokens
-- **Database**: Prisma ORM with PostgreSQL
-- **Caching**: Redis integration with ioredis
-- **Message Queue**: RabbitMQ support
-- **API Documentation**: Swagger/OpenAPI
-- **Security**: Helmet, CORS, Rate Limiting
-- **Validation**: class-validator for request validation
-- **Logging**: Pino logger with pretty printing
-- **Testing**: Jest with unit and e2e tests
-- **Code Quality**: ESLint, Prettier, Husky pre-commit hooks
-- **Containerization**: Docker and docker-compose
-- **CI/CD**: GitHub Actions workflow
+- **Arquitetura Limpa**: Estrutura modular com separação de responsabilidades
+- **Autenticação**: JWT com refresh tokens
+- **Banco de Dados**: Prisma ORM com PostgreSQL
+- **Cache**: Integração Redis (cache-manager + ioredis)
+- **Mensageria**: Suporte a RabbitMQ
+- **Integração SAP**: Módulo de exemplo com DTOs e serviço (`SapIntegrationModule` / `SapService`)
+- **Documentação**: Swagger/OpenAPI
+- **Segurança**: Helmet, CORS, Rate Limiting (Throttler)
+- **Validação**: class-validator
+- **Logging**: nestjs-pino (Pino) com pretty printing em dev
+- **Testes**: Jest (unit e e2e)
+- **Qualidade de Código**: ESLint, Prettier, Husky
+- **Containerização**: Docker e docker-compose
+- **CI/CD**: GitHub Actions
 
 ## 📁 Project Structure
 
@@ -27,10 +28,12 @@ src/
 │   ├── filters/            # Exception filters
 │   ├── interceptors/       # Request/response interceptors
 │   └── core.module.ts
-├── infrastructure/          # External services and persistence
+├── infrastructure/          # Serviços externos e persistência
 │   ├── database/           # Prisma service
 │   ├── cache/              # Redis service
-│   ├── messaging/          # RabbitMQ service
+│   ├── messaging/          # Serviço RabbitMQ
+│   ├── integration/
+│   │   └── sap/            # Integração SAP (exemplo)
 │   └── infrastructure.module.ts
 ├── modules/                 # Feature modules
 │   ├── auth/               # Authentication module
@@ -45,93 +48,105 @@ src/
 └── main.ts                 # Application entry point
 ```
 
-## 🛠️ Prerequisites
+## 🛠️ Requisitos
 
 - Node.js >= 20.0.0
 - npm >= 9.0.0
 - PostgreSQL >= 14
 - Redis >= 7
-- RabbitMQ >= 3 (optional)
-- Docker & Docker Compose (for containerized setup)
+- RabbitMQ >= 3 (opcional)
+- Docker & Docker Compose (opcional)
 
 ## 🏃 Quick Start
 
-### Local Development
+### Desenvolvimento local
 
-1. **Clone the repository**
-   ```bash
-   git clone git@gitlab.com:boilerplate-mfalzetta/boilerplate-nodejs.git
-   cd boilerplate
-   ```
-
-2. **Install dependencies**
+1. **Instale as dependências**
    ```bash
    npm install
    ```
 
-3. **Setup environment variables**
+2. **Configure variáveis de ambiente**
    ```bash
-   cp .env.example .env
+   # Crie o arquivo .env na raiz do projeto
+   # Use o exemplo abaixo como base
    ```
-   Edit `.env` with your configuration.
+   Edite `.env` com a sua configuração. Exemplo:
+   ```env
+   NODE_ENV=development
+   PORT=3000
+   API_PREFIX=api/v1
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boilerplate?schema=public
+   JWT_SECRET=change-me
+   JWT_REFRESH_SECRET=change-me-too
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_EXPIRES_IN=7d
+   REDIS_HOST=localhost
+   REDIS_PORT=6379
+   RABBITMQ_URL=amqp://guest:guest@localhost:5672
+   LOG_LEVEL=debug
+   ```
 
-4. **Start infrastructure services**
+3. **(Opcional) Suba infraestrutura local**
    ```bash
    docker-compose up -d postgres redis rabbitmq
    ```
 
-5. **Run database migrations**
+4. **Rode as migrações do banco**
    ```bash
    npm run migrate
    ```
 
-6. **Start development server**
+5. **Inicie o servidor de desenvolvimento**
    ```bash
    npm run dev
    ```
 
-The API will be available at `http://localhost:3000/api/v1`
-Swagger documentation at `http://localhost:3000/docs`
+Por padrão:
+- API: `http://localhost:3000/api/v1`
+- Swagger: `http://localhost:3000/docs`
 
-### Using Docker Compose
+Observação: sem `.env`, o código usa defaults `PORT=8081` e `API_PREFIX=api/v1/`. Recomenda-se definir via `.env`.
 
-1. **Start all services**
+### Usando Docker Compose
+
+1. **Subir todos os serviços**
    ```bash
    docker-compose up -d
    ```
 
-2. **View logs**
+2. **Ver logs**
    ```bash
    docker-compose logs -f app
    ```
 
-3. **Stop services**
+3. **Parar serviços**
    ```bash
    docker-compose down
    ```
 
-## 📜 Available Scripts
+## 📜 Scripts disponíveis
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Build production bundle |
-| `npm start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
-| `npm test` | Run unit tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:cov` | Run tests with coverage |
-| `npm run test:e2e` | Run e2e tests |
-| `npm run migrate` | Run database migrations |
-| `npm run migrate:deploy` | Deploy migrations (production) |
-| `npm run prisma:studio` | Open Prisma Studio |
+| `npm run dev` | Inicia servidor em desenvolvimento com hot reload |
+| `npm run build` | Gera build de produção |
+| `npm start` | Inicia servidor em produção (dist/main) |
+| `npm run lint` | Executa ESLint |
+| `npm run format` | Formata código com Prettier |
+| `npm test` | Roda testes unitários |
+| `npm run test:watch` | Testes em modo watch |
+| `npm run test:cov` | Gera cobertura de testes |
+| `npm run test:e2e` | Roda testes e2e |
+| `npm run migrate` | Executa migrações (dev) |
+| `npm run migrate:deploy` | Aplica migrações (produção) |
+| `npm run prisma:studio` | Abre Prisma Studio |
 
-## 🔐 Authentication
+## 🔐 Autenticação
 
-The boilerplate includes a complete JWT authentication system with refresh tokens.
+O boilerplate inclui autenticação JWT completa com refresh tokens.
 
-### Register a new user
+### Registro de novo usuário
 ```bash
 POST /api/v1/auth/register
 Content-Type: application/json
@@ -181,16 +196,16 @@ Content-Type: application/json
 }
 ```
 
-### Protected routes
+### Rotas protegidas
 Add the `Authorization` header with the access token:
 ```bash
 GET /api/v1/users/me
 Authorization: Bearer your-access-token
 ```
 
-## 🗄️ Database
+## 🗄️ Banco de Dados
 
-### Migrations
+### Migrações
 
 ```bash
 # Create a new migration
@@ -213,35 +228,35 @@ Edit `prisma/schema.prisma` to modify your database schema, then run:
 npm run migrate
 ```
 
-## 🧪 Testing
+## 🧪 Testes
 
-### Unit Tests
+### Testes unitários
 ```bash
 npm test
 ```
 
-### E2E Tests
+### Testes E2E
 ```bash
 npm run test:e2e
 ```
 
-### Coverage Report
+### Relatório de cobertura
 ```bash
 npm run test:cov
 ```
 
-## 🔒 Security Features
+## 🔒 Segurança
 
-- **Helmet**: Secure HTTP headers
-- **CORS**: Configurable cross-origin resource sharing
-- **Rate Limiting**: Throttle requests to prevent abuse
-- **Password Hashing**: bcrypt with salt rounds
-- **JWT**: Secure token-based authentication
-- **Validation**: Input validation with class-validator
+- **Helmet**: Cabeçalhos HTTP seguros
+- **CORS**: Cross-origin configurável
+- **Rate Limiting**: Limitação de taxa (Throttler)
+- **Hash de Senha**: bcrypt
+- **JWT**: Autenticação baseada em token
+- **Validação**: class-validator
 
 ## 📊 Logging
 
-The boilerplate uses Pino for high-performance logging:
+O projeto usa Pino (via `nestjs-pino`) para logging de alta performance:
 
 ```typescript
 import { Logger } from '@nestjs/common';
@@ -255,7 +270,7 @@ logger.debug('Debug message');
 
 ## 🔄 Cache
 
-Redis caching is configured and ready to use:
+Cache Redis configurado e pronto para uso:
 
 ```typescript
 import { RedisService } from '@infrastructure/cache/redis.service';
@@ -275,9 +290,9 @@ async example() {
 }
 ```
 
-## 📨 Message Queue
+## 📨 Mensageria
 
-RabbitMQ service is available for async messaging:
+RabbitMQ disponível para mensageria assíncrona:
 
 ```typescript
 import { RabbitMQService } from '@infrastructure/messaging/rabbitmq.service';
@@ -295,7 +310,7 @@ async example() {
 }
 ```
 
-## 🚢 Deployment
+## 🚢 Deploy
 
 ### Docker
 
@@ -305,27 +320,34 @@ docker build -t your-app:latest .
 docker push your-app:latest
 ```
 
-### Environment Variables
+### Variáveis de Ambiente
 
-Ensure all required environment variables are set in production:
+Garanta as variáveis abaixo em produção (veja exemplo em desenvolvimento acima):
+- `NODE_ENV`
+- `PORT`
+- `API_PREFIX`
 - `DATABASE_URL`
 - `JWT_SECRET`
 - `JWT_REFRESH_SECRET`
+- `JWT_EXPIRES_IN`
+- `JWT_REFRESH_EXPIRES_IN`
 - `REDIS_HOST`
+- `REDIS_PORT`
 - `RABBITMQ_URL`
+- `LOG_LEVEL`
 
 ### Health Checks
 
-The services include health checks in docker-compose. Customize them as needed.
+Serviços possuem health checks no `docker-compose.yml`. Ajuste conforme necessário.
 
-## 📝 API Documentation
+## 📝 Documentação da API
 
-Swagger documentation is automatically generated and available at:
+Swagger é gerado automaticamente e disponível em:
 ```
 http://localhost:3000/docs
 ```
 
-Add API documentation to your endpoints using decorators:
+Adicione documentação aos endpoints usando decorators:
 ```typescript
 @ApiTags('users')
 @ApiBearerAuth()
@@ -337,32 +359,46 @@ getProfile() {
 }
 ```
 
-## 🎯 Best Practices
+## 🎯 Boas práticas
 
-1. **Module Organization**: Group related features in modules
-2. **Dependency Injection**: Use NestJS DI system
-3. **DTOs**: Use Data Transfer Objects for validation
-4. **Error Handling**: Use NestJS exception filters
-5. **Logging**: Log important events and errors
-6. **Testing**: Write tests for critical paths
-7. **Security**: Never commit secrets, use environment variables
-8. **Code Quality**: Use ESLint and Prettier
+1. **Organização de Módulos**: Agrupe features relacionadas
+2. **Injeção de Dependência**: Utilize o DI do NestJS
+3. **DTOs**: Para validação e tipagem
+4. **Tratamento de Erros**: Exception filters globais
+5. **Logging**: Eventos importantes e erros
+6. **Testes**: Cubra fluxos críticos
+7. **Segurança**: Não comite segredos, use variáveis de ambiente
+8. **Qualidade**: ESLint e Prettier
 
-## 🤝 Contributing
+## 🧩 Integração SAP (exemplo)
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit changes: `git commit -am 'Add my feature'`
-4. Push to branch: `git push origin feature/my-feature`
-5. Submit a pull request
+O módulo `SapIntegrationModule` expõe o `SapService` com o método `createUser()` e DTO `SapCreateUserDto` (`src/infrastructure/integration/sap/`). Exemplo de uso:
 
-## 📄 License
+```typescript
+import { SapService } from '@infrastructure/integration/sap/sap.service';
+
+constructor(private readonly sap: SapService) {}
+
+async createUserInSap() {
+  return this.sap.createUser({ email: 'user@example.com', name: 'John Doe' });
+}
+```
+
+## 🤝 Contribuição
+
+1. Faça um fork
+2. Crie uma branch: `git checkout -b feature/minha-feature`
+3. Commit: `git commit -am 'Minha feature'`
+4. Push: `git push origin feature/minha-feature`
+5. Abra um PR
+
+## 📄 Licença
 
 MIT
 
-## 🙋 Support
+## 🙋 Suporte
 
-For issues and questions, please open an issue in the repository.
+Para dúvidas ou problemas, abra uma issue no repositório.
 
 ---
 
