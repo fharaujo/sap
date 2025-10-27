@@ -3,9 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 
-import { CoreModule } from '@core/core.module';
-import { InfrastructureModule } from '@infrastructure/infrastructure.module';
-import { AuthModule } from '@modules/auth/auth.module';
 import { UserModule } from '@modules/user/user.module';
 
 @Module({
@@ -52,9 +49,6 @@ import { UserModule } from '@modules/user/user.module';
     ]),
 
     // Application modules
-    CoreModule,
-    InfrastructureModule,
-    AuthModule,
     UserModule,
   ],
 })

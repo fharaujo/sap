@@ -42,12 +42,10 @@ async function bootstrap() {
 
   // Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('NestJS Boilerplate API')
-    .setDescription('Modern REST API with clean architecture')
+    .setTitle('SAP API')
+    .setDescription('SAP user API')
     .setVersion('1.0')
-    .addBearerAuth()
-    .addTag('auth', 'Authentication endpoints')
-    .addTag('users', 'User management endpoints')
+    .addTag('users', 'User endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
