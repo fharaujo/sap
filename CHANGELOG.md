@@ -7,38 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_Sem mudanças no momento._
+
+## [1.0.0] - 2025-10-27
+
+### Added
+- NestJS app base com TypeScript e configuração via `@nestjs/config`.
+- Logger com `nestjs-pino` e `pino-pretty` em desenvolvimento.
+- Rate limiting com `@nestjs/throttler`.
+- Segurança com `helmet` e CORS habilitado.
+- Validação global com `ValidationPipe` e `class-validator`.
+- Documentação Swagger disponível em `/docs`.
+- Módulo de usuários com endpoint `POST /users` protegido por `x-api-key` (`SAP_INTEGRATION_API_KEY`).
+- Scripts de build, dev, lint, format e testes (unit, e2e, cobertura).
+- Dockerfile e docker-compose (serviços de infraestrutura opcionais).
+- ESLint, Prettier e Husky.
+
 ### Changed
-- README atualizado para refletir a arquitetura atual (`src/infrastructure/integration/sap/`), scripts do `package.json`, variáveis de ambiente e instruções de Docker.
-- Correção/clarificação de portas e prefixos padrão (`PORT`, `API_PREFIX`) conforme `src/main.ts` e `docker-compose.yml`.
-- Seções traduzidas e padronizadas (pt-BR) sem alterar exemplos de uso.
-
-### Added
-- Seção de Integração SAP no README com exemplo de uso do `SapService` e `SapCreateUserDto`.
-
-## [1.0.0] - 2024-01-XX
-
-### Added
-- Initial project setup with NestJS
-- TypeScript configuration with path aliases
-- Prisma ORM with PostgreSQL
-- JWT authentication with refresh tokens
-- User management module
-- Redis caching integration
-- RabbitMQ messaging support
-- Swagger API documentation
-- Global error handling and logging
-- Rate limiting and security headers
-- Docker and docker-compose setup
-- GitHub Actions CI/CD pipeline
-- Unit and e2e tests with Jest
-- ESLint and Prettier configuration
-- Husky pre-commit hooks
-- Comprehensive README and documentation
+- README reestruturado para refletir o estado atual do código (remoção de referências a Prisma, Redis, RabbitMQ e Autenticação JWT que não existem no projeto).
+- Atualização de variáveis de ambiente recomendadas (`PORT`, `API_PREFIX`, `LOG_LEVEL`, `RATE_LIMIT_TTL`, `RATE_LIMIT_MAX`, `SAP_INTEGRATION_API_KEY`).
+- Adição da seção de Endpoints com `POST /users` e requisito de `x-api-key`.
 
 ### Security
-- bcrypt password hashing
-- JWT token authentication
-- Helmet for secure headers
-- CORS configuration
-- Input validation with class-validator
-- Rate limiting with throttler
+- Helmet para cabeçalhos seguros.
+- CORS configurável.
+- Validação de entrada com `class-validator`.
+- Rate limiting com `@nestjs/throttler`.
