@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosError, AxiosRequestConfig, AxiosResponse, Method } from 'axios';
 
 export type HttpHeaders = Record<string, string>;
 export type QueryParams = Record<string, string | number | boolean | null | undefined>;
@@ -19,37 +19,53 @@ export class HttpClientService {
     private readonly http: HttpService,
   ) {}
 
-  async get<T>(url: string, options?: RequestOptions): Promise<T> {
-    return this.request<T>('GET', url, undefined, options);
+  async get<TResult>(url: string, options?: RequestOptions | AxiosRequestConfig): Promise<TResult> {
+    return this.request<TResult>('GET', url, undefined, options);
   }
 
-  async post<T, B = unknown>(url: string, body?: B, options?: RequestOptions): Promise<T> {
-    return this.request<T>('POST', url, body, options);
-  }
-
-  async put<T, B = unknown>(url: string, body?: B, options?: RequestOptions): Promise<T> {
-    return this.request<T>('PUT', url, body, options);
-  }
-
-  async patch<T, B = unknown>(url: string, body?: B, options?: RequestOptions): Promise<T> {
-    return this.request<T>('PATCH', url, body, options);
-  }
-
-  async delete<T, B = unknown>(url: string, body?: B, options?: RequestOptions): Promise<T> {
-    return this.request<T>('DELETE', url, body, options);
-  }
-
-  private async request<T>(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  async post<TResult>(
     url: string,
     body?: unknown,
-    options?: RequestOptions,
-  ): Promise<T> {
+    options?: RequestOptions | AxiosRequestConfig,
+  ): Promise<TResult> {
+    return this.request<TResult>('POST', url, body, options);
+  }
+
+  async put<TResult>(
+    url: string,
+    body?: unknown,
+    options?: RequestOptions | AxiosRequestConfig,
+  ): Promise<TResult> {
+    return this.request<TResult>('PUT', url, body, options);
+  }
+
+  async patch<TResult>(
+    url: string,
+    body?: unknown,
+    options?: RequestOptions | AxiosRequestConfig,
+  ): Promise<TResult> {
+    return this.request<TResult>('PATCH', url, body, options);
+  }
+
+  async delete<TResult>(
+    url: string,
+    body?: unknown,
+    options?: RequestOptions | AxiosRequestConfig,
+  ): Promise<TResult> {
+    return this.request<TResult>('DELETE', url, body, options);
+  }
+
+  private async request<TResult>(
+    method: Method,
+    url: string,
+    body?: unknown,
+    options?: RequestOptions | AxiosRequestConfig,
+  ): Promise<TResult> {
     const config = this.buildRequestConfig(method, url, body, options);
     try {
-      const obs$ = this.http.request<T>(config);
-      const res: AxiosResponse<T> = await firstValueFrom(obs$);
-      return res.data as T;
+      const obs$ = this.http.request<TResult>(config);
+      const res: AxiosResponse<TResult> = await firstValueFrom(obs$);
+      return res.data as TResult;
     } catch (e: any) {
       this.handleError(e);
     }
@@ -65,19 +81,34 @@ export class HttpClientService {
   }
 
   private buildRequestConfig(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    method: Method,
     url: string,
     body?: unknown,
-    options?: RequestOptions,
+    options?: RequestOptions | AxiosRequestConfig,
   ): AxiosRequestConfig {
+    const isRequestOptions = (opt: any): opt is RequestOptions => !!opt && 'query' in opt;
+
+    if (isRequestOptions(options)) {
+      return {
+        method,
+        url,
+        headers: this.buildHeaders(options?.headers),
+        params: this.sanitizeQuery(options?.query),
+        data: body,
+        responseType: 'json',
+      };
+    }
+
+    const axiosConfig = (options as AxiosRequestConfig) || {};
     return {
       method,
       url,
-      headers: this.buildHeaders(options?.headers),
-      params: this.sanitizeQuery(options?.query),
       data: body,
       responseType: 'json',
-    } as AxiosRequestConfig;
+      headers: this.buildHeaders(axiosConfig.headers as HttpHeaders | undefined),
+      params: axiosConfig.params,
+      ...axiosConfig,
+    };
   }
 
   private sanitizeQuery(
@@ -106,11 +137,5 @@ export class HttpClientService {
       message = err.message;
     }
     throw new HttpException(message, status);
-  }
-
-  // Url é passada diretamente ao HttpService, query via params
-  // Método preservado apenas para compatibilidade se necessário futuramente
-  private buildUrl(url: string): string {
-    return url;
   }
 }
